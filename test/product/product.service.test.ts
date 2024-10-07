@@ -72,6 +72,29 @@ describe('ProductsService', () => {
         subscribers: [] as User[],
     };
 
+    const products: Product[] = [
+        {
+          id: 'product-id-1',
+          name: 'Product 1',
+          cost: 100,
+          description: 'Description 1',
+          categories: [] as Category[],
+          inStock: true,
+          owner: {} as User,
+          subscribers: [] as User[],
+        },
+        {
+          id: 'product-id-2',
+          name: 'Product 2',
+          cost: 200,
+          description: 'Description 2',
+          categories: [] as Category[],
+          inStock: false,
+          owner: {} as User,
+          subscribers: [] as User[],
+        },
+      ];
+
     beforeEach(async () => {
         const module: TestingModule = await Test.createTestingModule({
             providers: [
@@ -151,7 +174,7 @@ describe('ProductsService', () => {
         it('should return a list of products', async () => {
             mockProductRepository.find.mockResolvedValue([product]);
 
-            const result = await service.findAll();
+            const result = await service.findAll({"offset":0,"limit":10});
 
             expect(result).toEqual([product]);
             expect(mockProductRepository.find).toHaveBeenCalled();
@@ -164,7 +187,7 @@ describe('ProductsService', () => {
             mockProductRepository.findById.mockResolvedValue(product);
             mockProductRepository.save.mockResolvedValue(product);
 
-            const result = await service.update(product.id, updateProductDto);
+            const result = await service.update(product.id, updateProductDto, product.owner.id);
 
             expect(result).toEqual(product);
             expect(mockProductRepository.findOneBy).toHaveBeenCalledWith({"id": "product-id"});
@@ -174,7 +197,7 @@ describe('ProductsService', () => {
         it('should throw NotFoundException if the product is not found', async () => {
             mockProductRepository.findOneBy.mockResolvedValue(null);
 
-            await expect(service.update(product.id, updateProductDto)).rejects.toThrow(NotFoundException);
+            await expect(service.update(product.id, updateProductDto, product.owner.id)).rejects.toThrow(NotFoundException);
         });
     });
 
@@ -216,4 +239,97 @@ describe('ProductsService', () => {
             expect(mockAuthService.myInfo).toHaveBeenCalledWith('user-id');
         });
     });
+
+    describe('findByFilter', () => {
+    it('should return all products when no findByFilters are applied', async () => {
+      mockProductRepository.createQueryBuilder().getMany.mockResolvedValue(products);
+
+      const result = await service.findByFilter({});
+
+      expect(result).toEqual(products);
+      expect(mockProductRepository.createQueryBuilder).toHaveBeenCalled();
+      expect(mockProductRepository.createQueryBuilder().getMany).toHaveBeenCalled();
+    });
+
+    it('should findByFilter products by name', async () => {
+      mockProductRepository.createQueryBuilder().where.mockReturnValueOnce({
+        andWhere: jest.fn().mockReturnThis(),
+        leftJoinAndSelect: jest.fn().mockReturnThis(),
+        orderBy: jest.fn().mockReturnThis(),
+        skip: jest.fn().mockReturnThis(),
+        take: jest.fn().mockReturnThis(),
+        getMany: jest.fn().mockResolvedValue([products[0]]),
+      });
+
+      const result = await service.findByFilter({ name: 'Product 1' });
+
+      expect(result).toEqual([products[0]]);
+      expect(mockProductRepository.createQueryBuilder().where).toHaveBeenCalledWith('product.name ILIKE :name', { name: `%Product 1%` });
+    });
+
+    it('should findByFilter products by cost range', async () => {
+      mockProductRepository.createQueryBuilder().andWhere.mockReturnValueOnce({
+        leftJoinAndSelect: jest.fn().mockReturnThis(),
+        orderBy: jest.fn().mockReturnThis(),
+        skip: jest.fn().mockReturnThis(),
+        take: jest.fn().mockReturnThis(),
+        getMany: jest.fn().mockResolvedValue([products[1]]),
+      });
+
+      const result = await service.findByFilter({ costLow: 150, costHigh: 250 });
+
+      expect(result).toEqual([products[1]]);
+      expect(mockProductRepository.createQueryBuilder().andWhere).toHaveBeenCalledWith('product.cost >= :costLow', { costLow: 150 });
+      expect(mockProductRepository.createQueryBuilder().andWhere).toHaveBeenCalledWith('product.cost <= :costHigh', { costHigh: 250 });
+    });
+
+    it('should findByFilter products by categories', async () => {
+      mockProductRepository.createQueryBuilder().andWhere.mockReturnValueOnce({
+        leftJoinAndSelect: jest.fn().mockReturnThis(),
+        orderBy: jest.fn().mockReturnThis(),
+        skip: jest.fn().mockReturnThis(),
+        take: jest.fn().mockReturnThis(),
+        getMany: jest.fn().mockResolvedValue([products[0]]),
+      });
+
+      const result = await service.findByFilter({ categories: ['category-1'] });
+
+      expect(result).toEqual([products[0]]);
+      expect(mockProductRepository.createQueryBuilder().andWhere).toHaveBeenCalledWith('category.id IN (:...categories)', { categories: ['category-1'] });
+    });
+
+    it('should findByFilter products by inStock status', async () => {
+      mockProductRepository.createQueryBuilder().andWhere.mockReturnValueOnce({
+        leftJoinAndSelect: jest.fn().mockReturnThis(),
+        orderBy: jest.fn().mockReturnThis(),
+        skip: jest.fn().mockReturnThis(),
+        take: jest.fn().mockReturnThis(),
+        getMany: jest.fn().mockResolvedValue([products[0]]),
+      });
+
+      const result = await service.findByFilter({ inStock: true });
+
+      expect(result).toEqual([products[0]]);
+      expect(mockProductRepository.createQueryBuilder().andWhere).toHaveBeenCalledWith('product.inStock = :inStock', { inStock: true });
+    });
+
+    it('should apply pagination parameters correctly', async () => {
+      mockProductRepository.createQueryBuilder().skip.mockReturnValueOnce({
+        take: jest.fn().mockReturnThis(),
+        getMany: jest.fn().mockResolvedValue([products[0]]),
+      });
+
+      const result = await service.findByFilter({ offset: 0, limit: 1 });
+
+      expect(result).toEqual([products[0]]);
+      expect(mockProductRepository.createQueryBuilder().skip).toHaveBeenCalledWith(0);
+      expect(mockProductRepository.createQueryBuilder().take).toHaveBeenCalledWith(1);
+    });
+
+    it('should throw an InternalServerErrorException if an error occurs during findByFiltering', async () => {
+      mockProductRepository.createQueryBuilder().getMany.mockRejectedValue(new Error());
+
+      await expect(service.findByFilter({ name: 'Product 1' })).rejects.toThrow(InternalServerErrorException);
+    });
+  });
 });

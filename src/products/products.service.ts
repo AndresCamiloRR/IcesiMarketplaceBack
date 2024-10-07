@@ -13,7 +13,7 @@ import { Category } from '../categories/entities/category.entity';
 import { CategoriesService } from '../categories/categories.service';
 import { MailService, SmsService } from '../common/common.service';
 import { FilterProductDto } from './dto/filter-product.dto';
-import { PaginationDto } from 'src/common/dtos/pagination.dto';
+import { PaginationDto } from '../common/dtos/pagination.dto';
 
 @Injectable()
 export class ProductsService {
@@ -88,18 +88,26 @@ export class ProductsService {
       
 
     async update(id:string, product: UpdateProductDto, userId: string){
-        const user:User = await this.authService.myInfo(userId);
-        const productUpdate = await this.findById(id);
-
-        if (productUpdate.owner != user){
-            throw new UnauthorizedException("Users may only update their products")
+        try{
+            const productUpdate = await this.products.findOne({
+                where: { id: id },
+                relations: ['owner'], // Load the 'owner' relationship
+              });
+              if (productUpdate.owner.id !== userId){
+                throw new UnauthorizedException("Users may only update their products")
+            }
+            
+            //console.log(product)
+            if(product.inStock) this.notify(id, `${productUpdate.name} tiene nuevas unidades ;)`);
+            Object.assign(productUpdate, product);
+            this.products.save(productUpdate);
+            return productUpdate;
         }
-        
-        //console.log(product)
-        if(product.inStock) this.notify(id, `${productUpdate.name} tiene nuevas unidades ;)`);
-        Object.assign(productUpdate, product);
-        this.products.save(productUpdate);
-        return productUpdate;
+        catch{
+            throw new NotFoundException();
+        }
+            
+    
     }
 
     async findByCategory(categoryId:string){
@@ -157,7 +165,7 @@ export class ProductsService {
     }
 
     async findByFilter(filter: FilterProductDto){
-        const { name, costHigh, costLow, categories, inStock } = filter;
+        const { name, costHigh, costLow, categories, inStock, offset, limit } = filter;
         // Create a query builder for dynamic filtering
         const query = this.products.createQueryBuilder('product');
         // Filter by name (case insensitive)
@@ -180,6 +188,8 @@ export class ProductsService {
         query.andWhere('product.inStock = :inStock', { inStock });
         }
         // Execute the query and return the result
+
+        query.skip((offset) * limit).take(limit);
         return await query.getMany();
     }
 

@@ -13,7 +13,8 @@ import { AuthModule } from './auth/auth.module';
     ProductsModule,
     BrandsModule,
     ConfigModule.forRoot({
-      envFilePath: `${process.env.NODE_ENV}`
+      envFilePath: `.env.${process.env.NODE_ENV}`,
+      isGlobal:true
     }), // Carga las variables de entorno automáticamente
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],

@@ -17,6 +17,7 @@ describe('GET /', () => {
         let result;
         jest.spyOn(service, 'getHello').mockImplementation(() => result);
         console.log(await app.getHello())
+        console.log(process.env.DATABASE_URL)
         expect(await app.getHello()).toBe(result);
     });
 });
