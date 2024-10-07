@@ -9,7 +9,7 @@ async function bootstrap() {
             forbidNonWhitelisted: true,
         }),
     );
-    await application.listen(3000);
+    await application.listen(8000);
 }
 
 bootstrap();
