@@ -1,11 +1,12 @@
 /* eslint-disable prettier/prettier */
-import { Controller, Get, Post,Param, Body, ValidationPipe, UsePipes, ParseUUIDPipe, Delete, Patch, Request, UseGuards  } from '@nestjs/common';
+import { Controller, Get, Post,Param, Body, ValidationPipe, UsePipes, ParseUUIDPipe, Delete, Patch, Request, UseGuards, Query  } from '@nestjs/common';
 import { ProductsService } from './products.service';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
 import { SubscribeProductDto } from './dto/subscribe-product.dto';
 import { Auth } from '../auth/decorators/auth.decorator';
 import { validRoles } from '../auth/interfaces/valid-roles';
+import { FilterProductDto } from './dto/filter-product.dto';
 
 @Controller('products')
 export class ProductsController {
@@ -13,8 +14,13 @@ export class ProductsController {
     constructor(public readonly productsService:ProductsService){}
 
     @Get()
-    async findAll(){
-        return this.productsService.findAll();  
+    async findProducts(@Query() filter: FilterProductDto){
+        if (Object.keys(filter).length === 2 && filter.offset && filter.limit) {
+            // If only pagination properties are present (page and limit), use getAllProducts
+            return await this.productsService.findAll(filter);
+          }
+          // Otherwise, apply filters and pagination if necessary
+          return await this.productsService.findByFilter(filter);        
     }
     
     @Auth()      
@@ -48,11 +54,11 @@ export class ProductsController {
     }
 
     @Patch(':id')
-    //@Auth(validRoles.seller)
-    update(@Param('id', ParseUUIDPipe) id:string, @Body() body:UpdateProductDto){
-        return this.productsService.update(id,body);
+    @Auth(validRoles.seller)
+    update(@Request() req, @Param('id', ParseUUIDPipe) id:string, @Body() body:UpdateProductDto){
+        return this.productsService.update(id,body,req.user.id);
     }
 
-    
+
 
 }

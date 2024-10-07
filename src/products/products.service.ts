@@ -1,5 +1,5 @@
 /* eslint-disable prettier/prettier */
-import { Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
+import { Injectable, InternalServerErrorException, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import {v4 as uuid} from 'uuid'
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
@@ -12,6 +12,8 @@ import { SubscribeProductDto } from './dto/subscribe-product.dto';
 import { Category } from '../categories/entities/category.entity';
 import { CategoriesService } from '../categories/categories.service';
 import { MailService, SmsService } from '../common/common.service';
+import { FilterProductDto } from './dto/filter-product.dto';
+import { PaginationDto } from 'src/common/dtos/pagination.dto';
 
 @Injectable()
 export class ProductsService {
@@ -30,9 +32,13 @@ export class ProductsService {
         return product;
     }
 
-    async findAll(){
-        return this.products.find();
-    }
+    findAll(paginationDto:PaginationDto) {
+        const {limit=10, offset=0} = paginationDto;
+        return this.products.find({
+          take:limit,
+          skip:offset,
+        });
+      }
     
     async create(product:CreateProductDto, uId:string){
         try {
@@ -44,7 +50,7 @@ export class ProductsService {
                 this.categoriesService.notify(cat, `Como sabemos que amas ${thisCat.name}, te puede interesar ${product.name}, por solo ${product.cost}`)
             }
             const owner: User = await this.authService.myInfo(uId);
-            const newProduct:Product = {
+            const newProduct = {
                 id: uuid(), 
                 categories: categories, 
                 cost: product.cost, 
@@ -81,8 +87,13 @@ export class ProductsService {
       }
       
 
-    async update(id:string, product: UpdateProductDto){
+    async update(id:string, product: UpdateProductDto, userId: string){
+        const user:User = await this.authService.myInfo(userId);
         const productUpdate = await this.findById(id);
+
+        if (productUpdate.owner != user){
+            throw new UnauthorizedException("Users may only update their products")
+        }
         
         //console.log(product)
         if(product.inStock) this.notify(id, `${productUpdate.name} tiene nuevas unidades ;)`);
@@ -144,6 +155,35 @@ export class ProductsService {
 
         throw new InternalServerErrorException('Error creating product')
     }
+
+    async findByFilter(filter: FilterProductDto){
+        const { name, costHigh, costLow, categories, inStock } = filter;
+        // Create a query builder for dynamic filtering
+        const query = this.products.createQueryBuilder('product');
+        // Filter by name (case insensitive)
+        if (name) {
+        query.andWhere('LOWER(product.name) LIKE LOWER(:name)', { name: `%${name}%` });
+        }
+        // Filter by cost range
+        if (costHigh !== undefined) {
+        query.andWhere('product.cost <= :costHigh', { costHigh });
+        }
+        if (costLow !== undefined) {
+        query.andWhere('product.cost >= :costLow', { costLow });
+        }
+        // Filter by categories
+        if (categories && categories.length > 0) {
+        query.andWhere('product.category IN (:...categories)', { categories });
+        }
+        // Filter by stock status
+        if (inStock !== undefined) {
+        query.andWhere('product.inStock = :inStock', { inStock });
+        }
+        // Execute the query and return the result
+        return await query.getMany();
+    }
+
+
     
 
     

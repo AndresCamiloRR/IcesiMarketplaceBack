@@ -35,4 +35,5 @@ export class Product{
     //@OneToMany(()=>Product_Category, (product_category)=>product_category.product)
     //subscribers:Product_Category;
 
+    
 }
