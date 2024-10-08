@@ -36,8 +36,6 @@ describe('AuthController (e2e)', () => {
   afterAll(async () => {
     // Limpiar la base de datos
     const dataSource = app.get<DataSource>(getDataSourceToken());
-    console.log(dataSource.driver)
-    console.log(process.env.DATABASE_URL)
     // Obtener los nombres de todas las tablas
     const tables = await dataSource.query(`
       SELECT table_name 

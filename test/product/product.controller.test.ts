@@ -10,6 +10,8 @@ import crypto from 'crypto';
 import { CreateCategoryDto } from 'src/categories/dto/create-category.dto';
 import { getDataSourceToken } from '@nestjs/typeorm';
 import { DataSource, getConnection } from 'typeorm';
+import { FilterProductDto } from 'src/products/dto/filter-product.dto';
+import { Product } from 'src/products/entities/product.entity';
 
 describe('ProductsController (e2e)', () => {
     let app: INestApplication;
@@ -149,7 +151,6 @@ describe('ProductsController (e2e)', () => {
                 .get('/products/?offset=0&limit=10')
                 .expect(200)
                 .then(({ body }) => {
-                    //console.log(body);
                     expect(Array.isArray(body)).toBe(true);
                 });
         });
@@ -172,6 +173,122 @@ describe('ProductsController (e2e)', () => {
                 .expect(404);
         });
     });
+    describe('/products (GET)', () => {
+        it('should return a list of products', async () => {
+            return request(app.getHttpServer())
+                .get('/products/?offset=0&limit=10')
+                .set('Authorization', `Bearer ${accessToken}`)
+                .expect(200)
+                .then(({ body }) => {
+                    expect(Array.isArray(body)).toBe(true);
+                    expect(body.length).toBeGreaterThan(0); // Assuming there are products in the database
+                });
+        });
+    
+        it('should filter products by valid query parameters', async () => {
+            const filterParams = {
+                name: 'Test Product for Id',
+                costHigh: 250,
+                costLow: 150,
+                categories: [categoryId],
+                inStock: true, // Assuming you have products with this inStock value
+                offset:0,
+                limit:10
+            };
+            return request(app.getHttpServer())
+                .get(`/products/`)
+                .set('Authorization', `Bearer ${accessToken}`)
+                .query(filterParams)
+                .expect(200)
+                .then(({ body }) => {
+                    expect(Array.isArray(body)).toBe(true);
+                    expect(body.length).toBeGreaterThan(0); // Ensure some products match the filter
+                    body.forEach(product => {
+                        expect(product.name).toEqual('Test Product for Id');
+                        expect(product.cost).toBeGreaterThanOrEqual(150); // Check cost lower bound
+                        expect(product.cost).toBeLessThanOrEqual(250); // Check cost upper bound
+                        expect(product.categories).toContainEqual({id:categoryId, ...createCategoryDto, slug:createCategoryDto.name}); // Check category filter
+                        expect(product.inStock).toBe(true); // Ensure products are in stock
+                    });
+                });
+        });
+    
+        it('should return an empty array for non-existing filters', async () => {
+            const filterParams = {
+                name: 'Non-existing Product',
+                offset:0,
+                limit:10
+            };
+            return request(app.getHttpServer())
+                .get('/products/')
+                .set('Authorization', `Bearer ${accessToken}`)
+                .query(filterParams)
+                .expect(200)
+                .then(({ body }) => {
+                    expect(Array.isArray(body)).toBe(true);
+                    expect(body.length).toBe(0); // Expect no products to match
+                });
+        });
+    
+        it('should return filtered products based on category', async () => {
+            const filterParams = {
+                categories: [categoryId],
+                offset:0,
+                limit:10
+            };
+            return request(app.getHttpServer())
+                .get('/products/')
+                .set('Authorization', `Bearer ${accessToken}`)
+                .query(filterParams)
+                .expect(200)
+                .then(({ body }) => {
+                    expect(Array.isArray(body)).toBe(true);
+                    expect(body.length).toBeGreaterThan(0); // Assuming there are products in the specified category
+                    body.forEach(product => {
+                        expect(product.categories).toContainEqual({id:categoryId, ...createCategoryDto, slug:createCategoryDto.name});  // Ensure category matches
+                    });
+                });
+        });
+    
+        it('should filter products by inStock status', async () => {
+            const filterParams = {
+                inStock: false, // Filter for out-of-stock products
+                offset:0,
+                limit:10
+            };
+            return request(app.getHttpServer())
+                .get('/products/')
+                .set('Authorization', `Bearer ${accessToken}`)
+                .query(filterParams)
+                .expect(200)
+                .then(({ body }) => {
+                    expect(Array.isArray(body)).toBe(true);
+                    body.forEach(product => {
+                        expect(product.inStock).toBe(false); // Ensure all returned products are out of stock
+                    });
+                });
+        });
+
+        it('should filter products that cost less than 250', async () => {
+            const filterParams = {
+                costHigh: 250,
+                offset:0,
+                limit:10
+            };
+            return request(app.getHttpServer())
+                .get(`/products/`)
+                .set('Authorization', `Bearer ${accessToken}`)
+                .query(filterParams)
+                .expect(200)
+                .then(({ body }) => {
+                    expect(Array.isArray(body)).toBe(true);
+                    expect(body.length).toBeGreaterThan(0); // Ensure some products match the filter
+                    body.forEach(product => {
+                        expect(product.cost).toBeLessThanOrEqual(250); // Check cost upper bound
+                    });
+                });
+        });
+    });
     
     describe('/products/:id (PATCH)', () => {
         it('should update a product by ID', async () => {
@@ -179,9 +296,8 @@ describe('ProductsController (e2e)', () => {
                 .patch(`/products/${productId}`)
                 .set('Authorization', `Bearer ${accessToken}`)
                 .send(updateProductDto)
-                //.expect(200)
+                .expect(200)
                 .then(({ body }) => {
-                    console.log(body)
                     expect(body.name).toEqual(updateProductDto.name);
                     expect(body.cost).toEqual(updateProductDto.cost);
                     expect(body.description).toEqual(updateProductDto.description);
@@ -228,7 +344,6 @@ describe('ProductsController (e2e)', () => {
                 });
         });
 
-    });
-
+    })
     
 });

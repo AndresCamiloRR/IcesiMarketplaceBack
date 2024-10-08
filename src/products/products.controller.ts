@@ -15,7 +15,7 @@ export class ProductsController {
 
     @Get()
     async findProducts(@Query() filter: FilterProductDto){
-        if (Object.keys(filter).length === 2 && filter.offset && filter.limit) {
+        if (Object.keys(filter).length == 0 || (Object.keys(filter).length === 2 && filter.offset && filter.limit)) {
             // If only pagination properties are present (page and limit), use getAllProducts
             return await this.productsService.findAll(filter);
           }

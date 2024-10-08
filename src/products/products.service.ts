@@ -88,24 +88,24 @@ export class ProductsService {
       
 
     async update(id:string, product: UpdateProductDto, userId: string){
-        try{
-            const productUpdate = await this.products.findOne({
-                where: { id: id },
-                relations: ['owner'], // Load the 'owner' relationship
-              });
-              if (productUpdate.owner.id !== userId){
-                throw new UnauthorizedException("Users may only update their products")
-            }
+        const productUpdate = await this.products.findOne({
+            where: { id: id },
+            relations: ['owner'], // Load the 'owner' relationship
+        });
+
+        if(!productUpdate){
+            throw new NotFoundException()
+        }
+
+        if (productUpdate.owner.id !== userId){
+        throw new UnauthorizedException("Users may only update their products")
+        }
             
-            //console.log(product)
-            if(product.inStock) this.notify(id, `${productUpdate.name} tiene nuevas unidades ;)`);
-            Object.assign(productUpdate, product);
-            this.products.save(productUpdate);
-            return productUpdate;
-        }
-        catch{
-            throw new NotFoundException();
-        }
+        if(product.inStock) this.notify(id, `${productUpdate.name} tiene nuevas unidades ;)`);
+        Object.assign(productUpdate, product);
+        this.products.save(productUpdate);
+        return productUpdate;
+        
             
     
     }
@@ -165,10 +165,14 @@ export class ProductsService {
     }
 
     async findByFilter(filter: FilterProductDto){
-        const { name, costHigh, costLow, categories, inStock, offset, limit } = filter;
+        const { name, costHigh, costLow, categories, inStock, offset=0, limit=10 } = filter;
         // Create a query builder for dynamic filtering
         const query = this.products.createQueryBuilder('product');
         // Filter by name (case insensitive)
+        if (categories && categories.length > 0) {
+            query.innerJoinAndSelect('product.categories', 'category')
+            .where('category.id IN (:...categories)', { categories });
+        }
         if (name) {
         query.andWhere('LOWER(product.name) LIKE LOWER(:name)', { name: `%${name}%` });
         }
@@ -180,15 +184,10 @@ export class ProductsService {
         query.andWhere('product.cost >= :costLow', { costLow });
         }
         // Filter by categories
-        if (categories && categories.length > 0) {
-        query.andWhere('product.category IN (:...categories)', { categories });
-        }
         // Filter by stock status
         if (inStock !== undefined) {
         query.andWhere('product.inStock = :inStock', { inStock });
         }
-        // Execute the query and return the result
-
         query.skip((offset) * limit).take(limit);
         return await query.getMany();
     }
