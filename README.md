@@ -87,4 +87,4 @@ yarn test:cov
 
 ## Informe
 
-El informe se encuentra en: 
+El informe se encuentra en: InformeProyectoNest.docx
