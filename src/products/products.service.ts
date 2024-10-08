@@ -154,8 +154,9 @@ export class ProductsService {
                     
                     this.mailService.sendEmail(user.email, "Te puede interesar", message)
 
-                    this.smsService.sendSms("573022852699", message)
-
+                    if(user.phone){
+                        this.smsService.sendSms(user.phone, message)
+                    }
 
                 }
             }

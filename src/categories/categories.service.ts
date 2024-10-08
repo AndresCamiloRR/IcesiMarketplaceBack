@@ -107,14 +107,12 @@ export class CategoriesService {
     //try{
         for (const user of users){
             if ((Date.now()-user.lastNotified.getTime()) >= 10800000){
-
-                
                 this.mailService.sendEmail(user.email, "Te puede interesar", message)
-
-                this.smsService.sendSms("573022852699", message)
-
-
+                if(user.phone){
+                  this.smsService.sendSms(user.phone, message)
+              }
             }
+
         }
     //}
     //catch{}
