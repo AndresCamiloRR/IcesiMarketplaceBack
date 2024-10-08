@@ -48,9 +48,8 @@ export class AuthController {
         return this.authService.findByName(name, paginationDto);
     }
 
-    @Put()
     @Auth()
-    @Patch(':id')
+    @Patch()
     update(@Request() req, @Body() updateUserDto: UpdateUserDto) {
         const userId = req.user.id;
         return this.authService.update(userId, updateUserDto);
