@@ -165,10 +165,10 @@ describe('AuthController (e2e)', () => {
     });
   });
   
-  describe('/auth (PATCH)', () => {
+  describe('/auth (PUT)', () => {
     it('should update the current user', async () => {
       return request(app.getHttpServer())
-        .patch('/auth')
+        .put('/auth')
         .set('Authorization', `Bearer ${accessToken}`)
         .send(updateUserDto)
         .expect(200)

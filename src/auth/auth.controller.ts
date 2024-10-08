@@ -48,8 +48,8 @@ export class AuthController {
         return this.authService.findByName(name, paginationDto);
     }
 
+    @Put()
     @Auth()
-    @Patch()
     update(@Request() req, @Body() updateUserDto: UpdateUserDto) {
         const userId = req.user.id;
         return this.authService.update(userId, updateUserDto);
@@ -62,7 +62,3 @@ export class AuthController {
     }
 
 }
-function Patch(arg0: string): (target: AuthController, propertyKey: "update", descriptor: TypedPropertyDescriptor<(req: any, updateUserDto: UpdateUserDto) => Promise<any>>) => void | TypedPropertyDescriptor<...> {
-    throw new Error('Function not implemented.');
-}
-
