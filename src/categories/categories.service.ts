@@ -104,7 +104,7 @@ export class CategoriesService {
                         .relation(Category, 'subscribers')
                         .of(id)
                         .loadMany();
-    try{
+    //try{
         for (const user of users){
             if ((Date.now()-user.lastNotified.getTime()) >= 10800000){
 
@@ -116,8 +116,8 @@ export class CategoriesService {
 
             }
         }
-    }
-    catch{}
+    //}
+    //catch{}
 
     
 }

@@ -45,9 +45,15 @@ export class ProductsService {
             const categoriesId:string[] = product.categories;
             var categories: Category[] = [];
             for (const cat of categoriesId){
-                const thisCat: Category = await this.categoriesService.findOne(cat)
-                categories.push(thisCat)
-                this.categoriesService.notify(cat, `Como sabemos que amas ${thisCat.name}, te puede interesar ${product.name}, por solo ${product.cost}`)
+                try{
+                    const thisCat: Category = await this.categoriesService.findOne(cat)
+                    categories.push(thisCat)
+                    this.categoriesService.notify(cat, `Como sabemos que amas ${thisCat.name}, te puede interesar ${product.name}, por solo ${product.cost}`)
+                }
+                catch{
+                    throw new NotFoundException("Category not found")
+                }
+                
             }
             const owner: User = await this.authService.myInfo(uId);
             const newProduct = {
