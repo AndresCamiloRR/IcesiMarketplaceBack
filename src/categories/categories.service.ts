@@ -130,16 +130,11 @@ export class CategoriesService {
 
 
   async getByProduct(id:string){
-    const category = await this.categoryRepository.createQueryBuilder('category')
+    const categories = await this.categoryRepository.createQueryBuilder('category')
                       .innerJoin('category.products', 'product')
                       .where('product.id = :id', {id})
-                      .getOne()
 
-    if (!(category instanceof Category)){
-      throw new NotFoundException(`No se encontró ninguna categoría asociada al producto con el identificador ${id}`)
-    }
-
-    return category
+    return categories.getMany();
   }
   
 }
