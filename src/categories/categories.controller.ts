@@ -46,4 +46,10 @@ export class CategoriesController {
   subscribe(@Request() req, @Body() subscribeCategoryDto:SubscribeCategoryDto){
     return this.categoriesService.subscribe(subscribeCategoryDto, req.user.id)
   }
+
+  @Get('product/:id')
+  @Auth()
+  getByProduct(@Param('id',ParseUUIDPipe) id: string){
+    return this.categoriesService.getByProduct(id);
+  }
 }
