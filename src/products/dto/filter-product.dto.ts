@@ -19,7 +19,7 @@ export class FilterProductDto extends PartialType(PaginationDto){
     @Type(()=>Number)
     readonly costLow?: number;
     @IsArray()
-    @IsUUID('all',{each:true})
+
     @ArrayMinSize(1)
     @IsOptional()
     @Transform(({ value }) => {

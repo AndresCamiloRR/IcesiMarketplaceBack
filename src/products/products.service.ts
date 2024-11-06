@@ -179,8 +179,12 @@ export class ProductsService {
         if (categories && categories.length > 0) {
             query.innerJoinAndSelect('product.categories', 'category')
             .andWhere(new Brackets(qb => {
-            qb.where('category.id IN (:...categories)', { categories })
-              .orWhere('category.slug IN (:...categories)', { categories });
+            const isUuid = categories.every(cat => /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/.test(cat));
+            if (isUuid) {
+                qb.where('category.id IN (:...categories)', { categories });
+            } else {
+                qb.where('category.slug IN (:...categories)', { categories });
+            }
             }));
         }
         if (name) {
