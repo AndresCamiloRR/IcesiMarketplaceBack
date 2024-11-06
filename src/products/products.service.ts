@@ -5,7 +5,7 @@ import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Product } from './entities/product.entity';
-import { Repository } from 'typeorm';
+import { Brackets, Repository } from 'typeorm';
 import { AuthService } from '../auth/auth.service';
 import { User } from '../auth/entities/user.entity';
 import { SubscribeProductDto } from './dto/subscribe-product.dto';
@@ -178,7 +178,10 @@ export class ProductsService {
         // Filter by name (case insensitive)
         if (categories && categories.length > 0) {
             query.innerJoinAndSelect('product.categories', 'category')
-            .where('category.id IN (:...categories)', { categories });
+            .andWhere(new Brackets(qb => {
+            qb.where('category.id IN (:...categories)', { categories })
+              .orWhere('category.slug IN (:...categories)', { categories });
+            }));
         }
         if (name) {
         query.andWhere('LOWER(product.name) LIKE LOWER(:name)', { name: `%${name}%` });
