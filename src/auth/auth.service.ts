@@ -46,11 +46,11 @@ export class AuthService {
         const {email, password} = loginUser;
         const user = await this.userRepository.findOne({
             where: {email},
-            select: ['id', 'email', 'password']
+            select: ['id', 'email', 'password', 'roles']
         });
         if(!user || !bcrypt.compareSync(password, user.password))
             throw new UnauthorizedException('Invalid credentials');
-        return {user_id: user.id, email: user.email,
+        return {user_id: user.id, email: user.email, roles: user.roles,
             token: this.jwtService.sign({user_id: user.id})
         };
     }
