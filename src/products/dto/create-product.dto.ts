@@ -1,4 +1,4 @@
-import { ArrayMinSize, IsArray, IsNumber, IsString, Min } from "class-validator";
+import { ArrayMinSize, IsArray, IsNumber, IsOptional, IsString, Min } from "class-validator";
 
 export class CreateProductDto{
     @IsString()
@@ -12,4 +12,7 @@ export class CreateProductDto{
     @IsString({each:true})
     @ArrayMinSize(1)
     readonly categories: string[]
+    @IsOptional()
+    @IsString()
+    readonly image: string;
 }

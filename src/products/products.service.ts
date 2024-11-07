@@ -64,7 +64,8 @@ export class ProductsService {
                 name: product.name,
                 inStock: true,
                 owner: owner,
-                subscribers: []
+                subscribers: [],
+                image: product.image || '',
             };
             this.products.save(newProduct);
             return newProduct;
