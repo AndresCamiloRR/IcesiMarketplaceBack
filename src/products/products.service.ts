@@ -117,6 +117,14 @@ export class ProductsService {
     
     }
 
+    async myProducts(ownerId:string){
+        const products = await this.products.find({
+            where: { owner: { id: ownerId } },
+            relations: ['categories'],
+        });
+        return products;
+    }
+
     async findByCategory(categoryId:string){
         const products = await this.products
         .createQueryBuilder('product')
