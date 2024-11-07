@@ -25,7 +25,10 @@ export class ProductsService {
 ){}
 
     async findById(id: string){
-        const product= await this.products.findOneBy({id:id});
+        const product= await this.products.findOne({
+            where: { id: id },
+            relations: ['owner'], // Load the 'owner' relationship
+        });
         if(product==undefined){
             throw new NotFoundException();
         }
