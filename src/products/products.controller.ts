@@ -28,6 +28,12 @@ export class ProductsController {
     subscribe(@Request() req, @Body() subscribeProductDto:SubscribeProductDto){
         return this.productsService.subscribe(subscribeProductDto,req.user.id)
     }
+
+    @Auth()
+    @Get('myProducts')
+    myProducts(@Request() req){
+        return this.productsService.myProducts(req.user.id)
+    }
     
     @Post()
     @UsePipes(ValidationPipe)
