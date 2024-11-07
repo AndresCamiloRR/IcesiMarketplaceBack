@@ -78,8 +78,9 @@ export class ProductsController {
         return this.productsService.isSubscribed(req.user.id, id);
     }
 
-    @Get('pages')
+    @Get('numpages')
     async pages(){
+        console.log('huh')
         return this.productsService.numPages();
     }
 
