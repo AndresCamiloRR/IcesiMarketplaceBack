@@ -29,7 +29,8 @@ export class ProductsController {
         return this.productsService.subscribe(subscribeProductDto,req.user.id)
     }
 
-    @Get('myProducts')
+    @Auth()
+    @Get('/myProducts')
     myProducts(@Request() req){
         return this.productsService.myProducts(req.user.id)
     }
