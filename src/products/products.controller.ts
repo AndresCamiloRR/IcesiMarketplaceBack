@@ -29,6 +29,12 @@ export class ProductsController {
         return this.productsService.subscribed(req.user.id);
     }
 
+    @Get('numpages')
+    async pages(){
+        console.log('huh')
+        return this.productsService.numPages();
+    }
+
     
     @Auth()      
     @Post('subscribe')
@@ -78,10 +84,6 @@ export class ProductsController {
         return this.productsService.isSubscribed(req.user.id, id);
     }
 
-    @Get('numpages')
-    async pages(){
-        console.log('huh')
-        return this.productsService.numPages();
-    }
+
 
 }
