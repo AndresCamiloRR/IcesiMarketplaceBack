@@ -19,7 +19,7 @@ export class Product{
     @Column('text')
     description: string;
 
-    @Column('image', {default:''})
+    @Column('text', {default:''})
     image: string;
 
     // Un producto tiene muchas categorías y una categoría tiene muchos productos
