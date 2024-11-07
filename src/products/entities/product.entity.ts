@@ -19,6 +19,9 @@ export class Product{
     @Column('text')
     description: string;
 
+    @Column('image', {default:''})
+    image: string;
+
     // Un producto tiene muchas categorías y una categoría tiene muchos productos
     @ManyToMany(()=>Category, (category) => category.products, {cascade:true})
     categories:Category[];
