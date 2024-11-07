@@ -22,6 +22,13 @@ export class ProductsController {
           // Otherwise, apply filters and pagination if necessary
           return await this.productsService.findByFilter(filter);        
     }
+
+    @Get('psubscribed')
+    @Auth()
+    async subscribed(@Request() req){
+        return this.productsService.subscribed(req.user.id);
+    }
+
     
     @Auth()      
     @Post('subscribe')
@@ -63,12 +70,6 @@ export class ProductsController {
     @Auth(validRoles.seller)
     update(@Request() req, @Param('id', ParseUUIDPipe) id:string, @Body() body:UpdateProductDto){
         return this.productsService.update(id,body,req.user.id);
-    }
-
-    @Get('subscribed')
-    @Auth()
-    async subscribed(@Request() req){
-        return this.productsService.subscribed(req.user.id);
     }
 
     @Get('isSubscribed/:id')
