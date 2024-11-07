@@ -18,7 +18,6 @@ export class CategoriesController {
   }
 
   @Get()
-  @Auth()
   findAll(@Query() paginationDto: PaginationDto) {
     return this.categoriesService.findAll(paginationDto);
   }

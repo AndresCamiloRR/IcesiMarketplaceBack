@@ -90,6 +90,11 @@ export class ProductsController {
         return this.productsService.isSubscribed(req.user.id, id);
     }
 
+    @Get('seller/:id')
+    @Auth()
+    async getSeller(@Param('id') id:string){
+        return this.productsService.getSeller(id);
+    }
 
 
 }

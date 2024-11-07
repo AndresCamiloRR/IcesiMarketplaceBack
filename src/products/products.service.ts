@@ -255,5 +255,13 @@ export class ProductsService {
         return Math.ceil(count/limit);
     }
 
+    async getSeller(id:string){
+        const product = await this.products.findOne({
+            where: { id: id },
+            relations: ['owner'], // Load the 'owner' relationship
+        });
+        return product.owner;
+    }
+
     
 }
