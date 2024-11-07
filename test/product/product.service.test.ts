@@ -52,6 +52,7 @@ describe('ProductsService', () => {
         cost: 100,
         description: 'Test Description',
         categories: ['category-id'],
+        image: 'test-image-url',
     };
 
     const updateProductDto: UpdateProductDto = {
@@ -60,7 +61,8 @@ describe('ProductsService', () => {
         description: 'Updated Description',
         categories: ['category-id'],
         id: '',
-        inStock: false
+        inStock: false,
+        image: 'updated-image-url'
     };
 
     const product: Product = {
@@ -74,24 +76,26 @@ describe('ProductsService', () => {
 
     const products: Product[] = [
         {
-          id: 'product-id-1',
-          name: 'Product 1',
-          cost: 100,
-          description: 'Description 1',
-          categories: [] as Category[],
-          inStock: true,
-          owner: {} as User,
-          subscribers: [] as User[],
+            id: 'product-id-1',
+            name: 'Product 1',
+            cost: 100,
+            description: 'Description 1',
+            categories: [] as Category[],
+            inStock: true,
+            owner: {} as User,
+            subscribers: [] as User[],
+            image: ''
         },
         {
-          id: 'product-id-2',
-          name: 'Product 2',
-          cost: 200,
-          description: 'Description 2',
-          categories: [] as Category[],
-          inStock: false,
-          owner: {} as User,
-          subscribers: [] as User[],
+            id: 'product-id-2',
+            name: 'Product 2',
+            cost: 200,
+            description: 'Description 2',
+            categories: [] as Category[],
+            inStock: false,
+            owner: {} as User,
+            subscribers: [] as User[],
+            image: ''
         },
       ];
 
