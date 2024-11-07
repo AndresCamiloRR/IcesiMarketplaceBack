@@ -96,12 +96,14 @@ describe('ProductsController (e2e)', () => {
                 cost: 100,
                 description: 'Test Description',
                 categories: [body.id],
+                image: 'test-image-url', // Add the image property
             };
             createProductForIdDto = {
                 name: 'Test Product for Id',
                 cost: 200,
                 description: 'Test ID Description',
                 categories: [body.id],
+                image: 'test-image-url', // Add the image property
             };
         });
 

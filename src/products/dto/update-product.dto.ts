@@ -23,6 +23,7 @@ export class UpdateProductDto{
     @IsBoolean()
     @IsOptional()
     readonly inStock: boolean;
-
-
+    @IsOptional()
+    @IsString()
+    readonly image: string;
 }
