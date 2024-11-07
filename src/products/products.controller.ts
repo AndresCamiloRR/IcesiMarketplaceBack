@@ -29,6 +29,12 @@ export class ProductsController {
         return this.productsService.subscribed(req.user.id);
     }
 
+    @Get('psubscribed/:id')
+    @Auth()
+    async subscribedProduct(@Param('id', ParseUUIDPipe) id:string){
+        return this.productsService.subscribed(id);
+    }
+
     @Get('numpages')
     async pages(){
         console.log('huh')
