@@ -77,7 +77,7 @@ export class AuthService {
 
     async myInfo(id: string){
         const user = await this.userRepository.findOne({
-            where: {id}
+            where: {id, isActive: true} // Added condition to ignore inactive users
         });
 
         return user
@@ -99,13 +99,14 @@ export class AuthService {
         return this.userRepository.find({
             take:limit,
             skip:offset,
+            where: { isActive: true } // Added condition to ignore inactive users
         });
     }
 
     findByName(name:string, paginationDto:PaginationDto) {
         const {limit=10, offset=0} = paginationDto;
         return this.userRepository.find({
-            where: {name},
+            where: {name, isActive: true}, // Added condition to ignore inactive users
             take:limit,
             skip:offset,
         });
@@ -113,7 +114,7 @@ export class AuthService {
 
     findByEmail(email:string) {
         return this.userRepository.findOne({
-            where: {email}
+            where: {email, isActive: true} // Added condition to ignore inactive users
         });
     }
 
