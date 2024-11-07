@@ -33,10 +33,10 @@ export class ProductsService {
     }
 
     findAll(paginationDto:PaginationDto) {
-        const {limit=10, offset=0} = paginationDto;
+        const {limit=12, offset=1} = paginationDto;
         return this.products.find({
           take:limit,
-          skip:offset,
+          skip:offset-1,
         });
       }
     
@@ -191,7 +191,7 @@ export class ProductsService {
     }
 
     async findByFilter(filter: FilterProductDto){
-        const { name, costHigh, costLow, categories, inStock, offset=0, limit=10 } = filter;
+        const { name, costHigh, costLow, categories, inStock, offset=1, limit=12 } = filter;
         // Create a query builder for dynamic filtering
         const query = this.products.createQueryBuilder('product');
         // Filter by name (case insensitive)
@@ -221,7 +221,7 @@ export class ProductsService {
         if (inStock !== undefined) {
         query.andWhere('product.inStock = :inStock', { inStock });
         }
-        query.skip((offset) * limit).take(limit);
+        query.skip((offset-1) * limit).take(limit);
         return await query.getMany();
     }
 
@@ -244,6 +244,11 @@ export class ProductsService {
                                         .getOne();
         return !!product;
     
+    }
+
+    async numPages(limit:number=12){
+        const count = await this.products.count();
+        return Math.ceil(count/limit);
     }
 
     
