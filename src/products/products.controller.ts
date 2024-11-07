@@ -65,6 +65,16 @@ export class ProductsController {
         return this.productsService.update(id,body,req.user.id);
     }
 
+    @Get('subscribed')
+    @Auth()
+    async subscribed(@Request() req){
+        return this.productsService.subscribed(req.user.id);
+    }
 
+    @Get('isSubscribed/:id')
+    @Auth()
+    async isSubscribed(@Request() req, @Param('id', ParseUUIDPipe) id:string){
+        return this.productsService.isSubscribed(req.user.id, id);
+    }
 
 }
