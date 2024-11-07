@@ -139,16 +139,20 @@ export class ProductsService {
         const isSubscribed = await this.isSubscribed(buyer, id.productId);
         const product = await this.findById(id.productId);
         const user:User = await this.authService.myInfo(buyer);
+        console.log(isSubscribed)
         if (isSubscribed){
-            product.subscribers = product.subscribers.filter(subscriber => subscriber.id !== buyer);
+            await this.products
+                .createQueryBuilder()
+                .relation(Product, 'subscribers')
+                .of(product.id)
+                .remove(buyer);
         }
         else{
-            try{
-                product.subscribers.push(user)
-            }
-            catch{
-                product.subscribers = [user]
-            }
+            await this.products
+                .createQueryBuilder()
+                .relation(Product, 'subscribers')
+                .of(product.id)
+                .add(buyer);
         }
         await this.products.save(product);
 
