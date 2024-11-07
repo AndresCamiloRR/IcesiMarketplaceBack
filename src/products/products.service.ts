@@ -127,13 +127,19 @@ export class ProductsService {
     }
 
     async subscribe(id:SubscribeProductDto, buyer: string){
+        const isSubscribed = await this.isSubscribed(buyer, id.productId);
         const product = await this.findById(id.productId);
         const user:User = await this.authService.myInfo(buyer);
-        try{
-            product.subscribers.push(user)
+        if (isSubscribed){
+            product.subscribers = product.subscribers.filter(subscriber => subscriber.id !== buyer);
         }
-        catch{
-            product.subscribers = [user]
+        else{
+            try{
+                product.subscribers.push(user)
+            }
+            catch{
+                product.subscribers = [user]
+            }
         }
         await this.products.save(product);
 
@@ -206,8 +212,26 @@ export class ProductsService {
         return await query.getMany();
     }
 
+    async subscribed(userId:string){
+        const user:User = await this.authService.myInfo(userId);
+        const products = await this.products
+        .createQueryBuilder('product')
+        .innerJoinAndSelect('product.subscribers', 'subscriber') // Join with the subscribers relation
+        .where('subscriber.id = :userId', { userId }) // Filter by user id
+        .getMany();
+        return products;
+    }
 
+    async isSubscribed(userId:string, productId:string){
+        const user:User = await this.authService.myInfo(userId);
+        const product = await this.products.createQueryBuilder('product')
+                                        .innerJoinAndSelect('product.subscribers', 'subscriber') // Join with the subscribers relation
+                                        .where('subscriber.id = :userId', { userId }) // Filter by user id
+                                        .andWhere('product.id = :productId', { productId }) // Filter by product id
+                                        .getOne();
+        return !!product;
     
+    }
 
     
 }
