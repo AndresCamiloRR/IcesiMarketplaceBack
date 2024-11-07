@@ -22,6 +22,25 @@ export class ProductsController {
           // Otherwise, apply filters and pagination if necessary
           return await this.productsService.findByFilter(filter);        
     }
+
+    @Get('psubscribed')
+    @Auth()
+    async subscribed(@Request() req){
+        return this.productsService.subscribed(req.user.id);
+    }
+
+    @Get('psubscribed/:id')
+    @Auth()
+    async subscribedProduct(@Param('id', ParseUUIDPipe) id:string){
+        return this.productsService.subscribed(id);
+    }
+
+    @Get('numpages')
+    async pages(){
+        console.log('huh')
+        return this.productsService.numPages();
+    }
+
     
     @Auth()      
     @Post('subscribe')
@@ -65,21 +84,12 @@ export class ProductsController {
         return this.productsService.update(id,body,req.user.id);
     }
 
-    @Get('subscribed')
-    @Auth()
-    async subscribed(@Request() req){
-        return this.productsService.subscribed(req.user.id);
-    }
-
     @Get('isSubscribed/:id')
     @Auth()
     async isSubscribed(@Request() req, @Param('id', ParseUUIDPipe) id:string){
         return this.productsService.isSubscribed(req.user.id, id);
     }
 
-    @Get('pages')
-    async pages(){
-        return this.productsService.numPages();
-    }
+
 
 }

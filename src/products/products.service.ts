@@ -251,6 +251,7 @@ export class ProductsService {
 
     async numPages(limit:number=12){
         const count = await this.products.count();
+        console.log(count)
         return Math.ceil(count/limit);
     }
 

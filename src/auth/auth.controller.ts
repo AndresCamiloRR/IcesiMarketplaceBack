@@ -36,6 +36,13 @@ export class AuthController {
         return this.authService.myInfo(userId);
     }
 
+    
+    @Get('info/:id')
+    @Auth(validRoles.admin)
+    userInfo(@Param('id') id: string) {
+        return this.authService.myInfo(id);
+    }
+
     @Get('users')
     @Auth(validRoles.admin)
     findAll(@Query() paginationDto: PaginationDto) {
